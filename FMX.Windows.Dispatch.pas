@@ -10,28 +10,30 @@ procedure AllowDispatchWindowMessages(Form: TCustomForm);
 implementation
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, FMX.Platform.Win;
+  Winapi.Windows, Winapi.Messages, FMX.Platform.Win;
 
 function NewWndProc(Wnd: HWND; Msg: UINT; WParam: WParam; LParam: LParam): LRESULT; stdcall;
 begin
   var LForm := FindWindow(Wnd);
   if Assigned(LForm) then
   begin
-    var Mess: TMessage;
-    Mess.Msg := Msg;
-    Mess.WParam := WParam;
-    Mess.lParam := LParam;
-    Mess.Result := 0;
-    LForm.Dispatch(Mess);
-    Result := Mess.Result;
+    var Message: TMessage;
+    Message.Msg := Msg;
+    Message.WParam := WParam;
+    Message.lParam := LParam;
+    Message.Result := 0;
+    LForm.Dispatch(Message);
+    Result := Message.Result;
     if Result <> 0 then
       Exit;
   end;
-  Result := CallWindowProc(Pointer(GetWindowLong(ApplicationHWND, GWL_WNDPROC)), Wnd, Msg, WParam, LParam);
+  Result := CallWindowProc(Pointer(GetWindowLongPtr(Wnd, GWL_USERDATA)), Wnd, Msg, WParam, LParam);
 end;
 
 procedure AllowDispatchWindowMessages(Form: TCustomForm);
 begin
+  var OldWndProc := Pointer(GetWindowLongPtr(FormToHWND(Form), GWL_WNDPROC));
+  SetWindowLongPtr(FormToHWND(Form), GWL_USERDATA, NativeInt(OldWndProc));
   SetWindowLongPtr(FormToHWND(Form), GWL_WNDPROC, NativeInt(@NewWndProc));
 end;
 
