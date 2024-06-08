@@ -32,7 +32,7 @@ end;
 
 procedure AllowDispatchWindowMessages(Form: TCustomForm);
 begin
-  SetWindowLong(FormToHWND(Form), GWL_WNDPROC, Integer(@NewWndProc));
+  SetWindowLongPtr(FormToHWND(Form), GWL_WNDPROC, NativeInt(@NewWndProc));
 end;
 
 end.
