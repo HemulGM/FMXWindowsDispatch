@@ -27,7 +27,7 @@ uses
   FMX.Windows.Dispatch;
 ```
 
-And call AllowDispatchWindowMessages procedure
+And call AllowDispatchWindowMessages procedure when creating a window
 
 ```pascal
 procedure TForm5.FormCreate(Sender: TObject);
