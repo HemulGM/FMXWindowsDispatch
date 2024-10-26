@@ -7,13 +7,23 @@ uses
 
 procedure AllowDispatchWindowMessages(Form: TCustomForm);
 
+var
+  DwmWinProcProirity: Boolean = False;
+
 implementation
 
+{$IFDEF MSWINDOWS}
+
 uses
-  Winapi.Windows, Winapi.Messages, FMX.Platform.Win;
+  Winapi.Windows, Winapi.Messages, Winapi.Dwmapi, FMX.Platform.Win;
+{$ENDIF}
+
+{$IFDEF MSWINDOWS}
 
 function NewWndProc(Wnd: HWND; Msg: UINT; WParam: WParam; LParam: LParam): LRESULT; stdcall;
 begin
+  if DwmWinProcProirity and DwmDefWindowProc(Wnd, Msg, WParam, LParam, Result) then
+    Exit;
   var LForm := FindWindow(Wnd);
   if Assigned(LForm) then
   begin
@@ -29,12 +39,15 @@ begin
   end;
   Result := CallWindowProc(Pointer(GetWindowLongPtr(Wnd, GWL_USERDATA)), Wnd, Msg, WParam, LParam);
 end;
+{$ENDIF}
 
 procedure AllowDispatchWindowMessages(Form: TCustomForm);
 begin
+  {$IFDEF MSWINDOWS}
   var OldWndProc := Pointer(GetWindowLongPtr(FormToHWND(Form), GWL_WNDPROC));
   SetWindowLongPtr(FormToHWND(Form), GWL_USERDATA, NativeInt(OldWndProc));
   SetWindowLongPtr(FormToHWND(Form), GWL_WNDPROC, NativeInt(@NewWndProc));
+  {$ENDIF}
 end;
 
 end.
