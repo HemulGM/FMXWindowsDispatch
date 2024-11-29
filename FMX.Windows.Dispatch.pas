@@ -3,12 +3,13 @@
 interface
 
 uses
-  FMX.Forms;
+  FMX.Forms, System.SysUtils;
 
 procedure AllowDispatchWindowMessages(Form: TCustomForm);
 
 var
   DwmWinProcProirity: Boolean = False;
+  ProcCallback: TProc<Cardinal, NativeUInt, NativeInt>;
 
 implementation
 
@@ -24,6 +25,8 @@ function NewWndProc(Wnd: HWND; Msg: UINT; WParam: WParam; LParam: LParam): LRESU
 begin
   if DwmWinProcProirity and DwmDefWindowProc(Wnd, Msg, WParam, LParam, Result) then
     Exit;
+  if Assigned(ProcCallback) then
+    ProcCallback(Msg, WParam, LParam);
   var LForm := FindWindow(Wnd);
   if Assigned(LForm) then
   begin
